@@ -9,13 +9,19 @@ app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
 
-var users_list = [];
+app.get('/:tel', (req, res) => {
+  var ms = chats.filter(item => item.data.telefono === req.params.tel);
+  res.json(ms);
+})
+
+var chats = [];
 io.on('connection', function(socket){
   socket.emit('welcome-messaje', '¿Hola en que te podemos ayudar? comunicate con nosostros');
   socket.on('chat-contact', function(data) {
-    socket.emit('user-list-in-chat', data);
+    socket.broadcast.emit('user-list-in-chat', data);
     socket.emit('chat-contact', {msg: '!Hola ✋ '+ data.nombre +' en un momento un asesor se comunicara contigo via telefonica!', user: 'bot'});
     socket.on('chat-'+data.telefono, function(data_) {
+      chats.push(data_)
       socket.emit('chat-'+data.telefono, data_);
     })
   })
@@ -30,5 +36,5 @@ io.on('connection', function(socket){
 });
 
 http.listen(port, () => {
-  console.log("server on port: ", port);
+  console.log("server on port: http://localhost:"+port);
 });
